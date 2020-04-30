@@ -27,7 +27,7 @@ type Struct struct {
 func New(s interface{}) *Struct {
 	return &Struct{
 		raw:     s,
-		value:   strctVal(s),
+		value:   structVal(s),
 		TagName: DefaultTagName,
 	}
 }
@@ -425,19 +425,20 @@ func (s *Struct) structFields() []reflect.StructField {
 	return f
 }
 
-func strctVal(s interface{}) reflect.Value {
-	v := reflect.ValueOf(s)
-
-	// if pointer get the underlying element≤
-	for v.Kind() == reflect.Ptr {
-		v = v.Elem()
+func structVal(s interface{}) (rv reflect.Value) {
+	if v, ok := s.(reflect.Value); ok {
+		rv = v
+	} else {
+		rv = reflect.ValueOf(s)
 	}
-
-	if v.Kind() != reflect.Struct {
+	// if pointer get the underlying element≤
+	for rv.Kind() == reflect.Ptr {
+		rv = rv.Elem()
+	}
+	if rv.Kind() != reflect.Struct {
 		panic("not struct")
 	}
-
-	return v
+	return
 }
 
 // Map converts the given struct to a map[string]interface{}. For more info
